@@ -60,5 +60,5 @@ export default async function handler(req,res){
  if(action==='delete'){const [item]=await db('portal_items?id=eq.'+id(b.id));if(!item||(item.kind==='notes'&&item.owner_id!==u.id))fail('Registro não encontrado.',404);await db('portal_items?id=eq.'+item.id,'DELETE');return res.json({ok:true});}
  if(action==='tax-current'){const [item]=await db('portal_items?id=eq.'+id(b.id)+'&kind=eq.tax');if(!item)fail('Tabela não encontrada.',404);await db('portal_settings?id=eq.1','PATCH',{current_tax:item.id});return res.json({ok:true});}
  fail('Ação não encontrada.',404);
- }catch(e){res.status(e.status||500).json({error:e.status?e.message:'Não foi possível concluir. Confira a conexão e a configuração do Supabase.'});}
+ }catch(e){res.status(e.status||500).json({error:e.status?e.message:'Não foi possível concluir a operação. Tente novamente em instantes. Se o problema persistir, contate o administrador.'});}
 }
