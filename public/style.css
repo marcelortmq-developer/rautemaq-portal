@@ -44,3 +44,25 @@ aside{overflow-y:auto}input[type=file]{font-size:14px}.note-top{font-size:12px;l
 [data-theme="dark"] button:disabled,[data-theme="dark"] input:disabled,[data-theme="dark"] select:disabled,[data-theme="dark"] textarea:disabled{background:var(--hover);color:var(--muted);border-color:var(--border);opacity:1;cursor:not-allowed}
 [data-theme="dark"] ::selection{background:var(--accent);color:var(--on-accent)}
 @media(max-width:780px){.header-right .theme-label{display:none}.header-right .theme-toggle{padding:7px 10px}.login-theme{margin-bottom:12px}}
+
+/* Compact column masonry: reading and tab order run down each column. */
+.notes-grid{display:block;columns:3;column-gap:20px}
+.notes-grid>.note,.notes-grid>.note-add{break-inside:avoid;display:inline-flex;width:100%;margin:0 0 20px;min-height:0;vertical-align:top}
+.notes-grid>.note-add{padding:24px}
+.note h3{overflow-wrap:anywhere}
+.note p{max-height:240px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;overflow-wrap:anywhere}
+.note-bottom{margin-top:0;padding-top:16px}
+.note-top{margin-bottom:12px}
+.note[style], [data-theme="dark"] .note[style],.color-preview{background:var(--note-bg);color:var(--note-fg);border-color:var(--note-fg)}
+.note[style] p,.note[style] .note-top,.note[style] .note-bottom>span,.note[style] .icon-btn{color:var(--note-fg)}
+.note[style] .icon-btn:hover{background:transparent;outline:1px solid currentColor}
+.note[style] [data-delete]:hover{background:#821c24;color:#fff}
+.note[style] :focus-visible{outline:2px solid var(--note-fg);outline-offset:2px}
+.note-view{width:min(960px,calc(100% - 32px));overflow:hidden}
+.full-note{white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto;max-height:65vh;padding:4px}
+.note-colors{border:1px solid var(--border);border-radius:8px;margin:18px 0;padding:14px}
+.color-square{position:relative;width:100%;max-width:260px;aspect-ratio:1;background-image:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent);touch-action:none;margin-top:16px}
+.color-square span{position:absolute;width:12px;height:12px;border:2px solid white;outline:1px solid black;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.color-preview{padding:16px;border-radius:8px;margin-top:12px}
+@media(max-width:1150px){.notes-grid{columns:2}}
+@media(max-width:780px){.notes-grid{columns:1}.note-view{width:calc(100% - 16px);max-height:calc(100dvh - 16px);padding:24px}.full-note{max-height:calc(100dvh - 160px)}}
