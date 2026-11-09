@@ -50,7 +50,7 @@ aside{overflow-y:auto}input[type=file]{font-size:14px}.note-top{font-size:12px;l
 .notes-grid>.note,.notes-grid>.note-add{break-inside:avoid;display:inline-flex;width:100%;margin:0 0 20px;min-height:0;vertical-align:top}
 .notes-grid>.note-add{padding:24px}
 .note h3{overflow-wrap:anywhere}
-.note p{max-height:240px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;overflow-wrap:anywhere}
+.note p{max-height:240px;overflow-y:auto;overscroll-behavior-y:contain;overflow-x:hidden;scrollbar-width:thin;overflow-wrap:anywhere}
 .note-bottom{margin-top:0;padding-top:16px}
 .note-top{margin-bottom:12px}
 .note[style], [data-theme="dark"] .note[style],.color-preview{background:var(--note-bg);color:var(--note-fg);border-color:var(--note-fg)}
