@@ -52,7 +52,7 @@ export default async function handler(req,res){
  }
  if(action==='save'){
  if(!allowed.includes(b.kind))fail('Seção inválida.');let old;if(b.id){[old]=await db('portal_items?id=eq.'+id(b.id));if(!old||old.kind!==b.kind||(old.kind==='notes'&&old.owner_id!==u.id))fail('Registro não encontrado.',404);}
- const data={kind:b.kind,title:cleanText(b.title,180),content:cleanText(b.content||'',30000),url:b.url?url(b.url):'',color:['lime','yellow','blue','pink'].includes(b.color)?b.color:'lime',file_path:cleanText(b.file_path||'',500),owner_id:b.kind==='notes'?u.id:null};
+ const data={kind:b.kind,title:cleanText(b.title,180),content:cleanText(b.content||'',30000),url:b.url?url(b.url):'',color:(['lime','yellow','blue','pink'].includes(b.color)||/^#[0-9a-f]{6}$/i.test(b.color||''))?b.color:'lime',file_path:cleanText(b.file_path||'',500),owner_id:b.kind==='notes'?u.id:null};
  if(!data.title)fail('Informe um título.');if(['versions','drive'].includes(b.kind)&&!data.url)fail('Informe o link.');if(['files','tax'].includes(b.kind)&&!data.file_path)fail('Selecione um arquivo.');
  if(data.file_path&&data.file_path!==old?.file_path&&!data.file_path.startsWith(u.id+'/'))fail('Arquivo inválido.',403);
  return res.json(await db('portal_items'+(old?'?id=eq.'+old.id:''),old?'PATCH':'POST',data));
