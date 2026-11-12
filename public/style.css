@@ -98,3 +98,5 @@ aside{overflow-y:auto}input[type=file]{font-size:14px}.note-top{font-size:12px;l
 [data-theme="light"] button:focus-visible,[data-theme="light"] a:focus-visible,[data-theme="light"] input:focus-visible,[data-theme="light"] textarea:focus-visible,[data-theme="light"] select:focus-visible{outline:3px solid var(--light-accent);outline-offset:3px}
 [data-theme="light"] .note[style] :focus-visible{outline-color:var(--note-fg)}
 [data-theme="light"] .secondary:disabled,[data-theme="light"] .primary:disabled,[data-theme="light"] input:disabled,[data-theme="light"] textarea:disabled,[data-theme="light"] select:disabled{background:var(--light-secondary);color:var(--muted);border-color:var(--light-control-border);opacity:1;cursor:not-allowed}
+
+[data-theme="light"] .preview-link,[data-theme="light"] .badge{color:#47751B}
