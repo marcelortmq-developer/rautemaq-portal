@@ -35,6 +35,23 @@ export default async function handler(req,res){
  const signed=await storage('object/sign/portal/'+path,'POST',JSON.stringify({expiresIn:60}));return res.redirect(302,process.env.SUPABASE_URL+'/storage/v1'+signed.signedURL);
  }
  if(method!=='POST')fail('Ação inválida.',404);
+
+ if(action==='note-layout'){
+  const noteId=id(b.id),mode=b.mode;
+  if(!['desktop','mobile'].includes(mode))fail('Tipo de tela inválido.');
+  const [note]=await db('portal_items?id=eq.'+noteId+'&kind=eq.notes&owner_id=eq.'+u.id);
+  if(!note)fail('Anotação não encontrada.',404);
+  const layout=b.layout;
+  if(layout!==null){
+   if(!layout||typeof layout!=='object')fail('Layout inválido.');
+   for(const key of ['position_x','position_y','width','height'])if(!Number.isFinite(layout[key])||!Number.isInteger(layout[key]))fail('Coordenadas inválidas.');
+   if(layout.position_x<0||layout.position_y<0||layout.width<220||layout.height<160||layout.width>5000||layout.height>3000||layout.position_x+layout.width>5000||layout.position_y+layout.height>100000)fail('Layout fora dos limites.');
+  }
+  const clean=layout===null?null:Object.fromEntries(['position_x','position_y','width','height'].map(k=>[k,layout[k]]));
+  await db('portal_items?id=eq.'+noteId+'&kind=eq.notes&owner_id=eq.'+u.id,'PATCH',{['layout_'+mode]:clean});
+  return res.json({ok:true});
+ }
+
  if(action==='logout'){await db('portal_sessions?token_hash=eq.'+digest(token),'DELETE');res.setHeader('Set-Cookie','session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');return res.json({ok:true});}
  if(action==='user-save'){
  admin(u);const username=cleanText(b.username,40).toLowerCase(),name=cleanText(b.name,100);if(!/^[a-z0-9_]{2,40}$/.test(username)||!name)fail('Nome ou usuário inválido.');
