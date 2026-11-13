@@ -200,7 +200,11 @@ function initNoteBoard(rows,readOnly=false){
  });
  toggle.onclick=()=>{organizingNotes=!organizingNotes;controls();};
  async function arrange(defaults){
-  if(!confirm(defaults?'Restaurar o layout padrão nesta categoria de tela?':'Substituir a disposição atual por uma organização compacta nesta categoria de tela?'))return;
+  const accepted=await new Promise(resolve=>{
+   modal('<h2>'+ (defaults?'Restaurar layout padrão?':'Organizar automaticamente?') +'</h2><p>A disposição personalizada desta categoria de tela será substituída. O conteúdo e as cores serão preservados.</p><button class="primary" id="confirm-layout">Confirmar organização</button>');
+   const dialog=$('#editor');let confirmed=false;dialog.addEventListener('close',()=>resolve(confirmed),{once:true});
+   $('#confirm-layout').onclick=()=>{confirmed=true;dialog.close();};
+  });if(!accepted)return;
   busy=true;controls();indicate('Salvando organização…');
   const used=[];
   try{
