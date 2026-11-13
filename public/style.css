@@ -131,3 +131,5 @@ aside{overflow-y:auto}input[type=file]{font-size:14px}.note-top{font-size:12px;l
 @media(pointer:coarse){.resize-handle{min-width:22px;min-height:22px}.move-handle{min-height:30px}}
 
 .board-tools[hidden]{display:none}
+
+.board-tools button[hidden]{display:none}
