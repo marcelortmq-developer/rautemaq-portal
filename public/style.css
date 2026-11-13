@@ -104,7 +104,7 @@ aside{overflow-y:auto}input[type=file]{font-size:14px}.note-top{font-size:12px;l
 /* Independent note workspace, scoped to the notes page. */
 .board-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0}
 .board-status{font-size:13px;color:var(--muted)}
-.board-scroll{max-height:75vh;overflow:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:10px;padding:10px}
+.board-scroll{max-height:75vh;overflow:auto;overscroll-behavior:auto;border:1px solid var(--border);border-radius:10px;padding:10px}
 .note-board{position:relative;width:100%;min-width:220px;min-height:600px}
 .note-board.organizing{background-image:radial-gradient(var(--muted) .6px,transparent .6px);background-size:20px 20px}
 .note-board>.note{position:absolute;min-height:0;margin:0;padding:14px;display:flex;box-sizing:border-box}
@@ -129,3 +129,5 @@ aside{overflow-y:auto}input[type=file]{font-size:14px}.note-top{font-size:12px;l
 .note-board .moving{z-index:3;box-shadow:0 10px 25px #0005}
 .note-board .collision{outline:3px solid #d93645;outline-offset:2px}
 @media(pointer:coarse){.resize-handle{min-width:22px;min-height:22px}.move-handle{min-height:30px}}
+
+.board-tools[hidden]{display:none}
