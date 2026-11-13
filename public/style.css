@@ -100,3 +100,32 @@ aside{overflow-y:auto}input[type=file]{font-size:14px}.note-top{font-size:12px;l
 [data-theme="light"] .secondary:disabled,[data-theme="light"] .primary:disabled,[data-theme="light"] input:disabled,[data-theme="light"] textarea:disabled,[data-theme="light"] select:disabled{background:var(--light-secondary);color:var(--muted);border-color:var(--light-control-border);opacity:1;cursor:not-allowed}
 
 [data-theme="light"] .preview-link,[data-theme="light"] .badge{color:#47751B}
+
+/* Independent note workspace, scoped to the notes page. */
+.board-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+.board-status{font-size:13px;color:var(--muted)}
+.board-scroll{max-height:75vh;overflow:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:10px;padding:10px}
+.note-board{position:relative;width:100%;min-width:220px;min-height:600px}
+.note-board.organizing{background-image:radial-gradient(var(--muted) .6px,transparent .6px);background-size:20px 20px}
+.note-board>.note{position:absolute;min-height:0;margin:0;padding:14px;display:flex;box-sizing:border-box}
+.note-board .note-top{flex-shrink:0;font-size:10px;gap:5px;margin-bottom:8px}
+.note-board .note-top>svg{display:none}
+.note-board h3{flex-shrink:0;max-height:44px;overflow:auto;font-size:15px}
+.note-board .note p{flex:1;min-height:0;max-height:none;margin-top:6px;overscroll-behavior:contain}
+.note-board .note-bottom{flex-shrink:0;padding-top:6px;gap:2px}
+.note-board .note-bottom>span{font-size:9px}
+.note-board .card-actions .icon-btn{padding:5px}
+.layout-handle{display:none}
+.organizing .layout-handle{display:block}
+.move-handle{background:transparent;border:1px solid currentColor;color:inherit;border-radius:4px;cursor:grab;font-size:11px;padding:3px;touch-action:none;user-select:none}
+.resize-handle{position:absolute;border:0;background:transparent;padding:0;touch-action:none;z-index:2}
+.handle-n,.handle-s{height:10px;left:14px;right:14px;cursor:ns-resize}
+.handle-n{top:-4px}.handle-s{bottom:-4px}
+.handle-e,.handle-w{width:10px;top:14px;bottom:14px;cursor:ew-resize}
+.handle-e{right:-4px}.handle-w{left:-4px}
+.handle-ne,.handle-nw,.handle-se,.handle-sw{width:14px;height:14px;border:2px solid var(--note-fg);border-radius:3px;background:var(--note-bg)}
+.handle-ne{top:0;right:0;cursor:nesw-resize}.handle-nw{top:0;left:0;cursor:nwse-resize}
+.handle-se{bottom:0;right:0;cursor:nwse-resize}.handle-sw{bottom:0;left:0;cursor:nesw-resize}
+.note-board .moving{z-index:3;box-shadow:0 10px 25px #0005}
+.note-board .collision{outline:3px solid #d93645;outline-offset:2px}
+@media(pointer:coarse){.resize-handle{min-width:22px;min-height:22px}.move-handle{min-height:30px}}
