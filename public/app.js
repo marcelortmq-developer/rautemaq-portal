@@ -145,10 +145,10 @@ function initNoteBoard(rows){
  function layout(){
   if(active)return;
   W=Math.max(220,Math.min(5000,grid.clientWidth));mode=matchMedia('(max-width:780px)').matches?'mobile':'desktop';
-  const used=[];rects=rows.map((item,i)=>{
+  const used=[];rects=new Array(rows.length);const order=rows.map((item,i)=>i).sort((a,b)=>Number(!!rows[b]['layout_'+mode])-Number(!!rows[a]['layout_'+mode]));order.forEach(i=>{const item=rows[i];
    const saved=item['layout_'+mode];const valid=saved&&['position_x','position_y','width','height'].every(k=>Number.isFinite(saved[k]));
    const fallback={position_x:0,position_y:0,width:Math.min(W,300),height:Math.min(420,Math.max(220,170+Math.ceil((item.content||'').length/35)*23))};
-   let r=fit(valid?saved:fallback);if(!valid||!free(r,used))r=place(r,used);used.push(r);return r;
+   let r=fit(valid?saved:fallback);if(!valid||!free(r,used))r=place(r,used);used.push(r);rects[i]=r;
   });paint();controls();
  }
  async function save(index,next,previous){
@@ -169,6 +169,7 @@ function initNoteBoard(rows){
     if(dir.includes('e'))r.width+=dx;if(dir.includes('s'))r.height+=dy;
     if(dir.includes('w')){r.position_x+=dx;r.width-=dx;}if(dir.includes('n')){r.position_y+=dy;r.height-=dy;}
    }
+   r=Object.fromEntries(Object.entries(r).map(([k,v])=>[k,Math.round(v)]));
    const valid=r.width>=220&&r.height>=160&&r.height<=3000&&r.position_x>=0&&r.position_y>=0&&r.position_x+r.width<=W&&r.position_y+r.height<=100000&&free(r,rects.filter((_,i)=>i!==index));
    c.classList.toggle('collision',!valid);
    if(valid){last=Object.fromEntries(Object.entries(r).map(([k,v])=>[k,Math.round(v)]));rects[index]=last;paint();}
@@ -189,7 +190,7 @@ function initNoteBoard(rows){
    if(!organizingNotes||busy||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();
    const old={...rects[index]},r={...old},step=e.shiftKey?1:10,dx=e.key==='ArrowLeft'?-step:e.key==='ArrowRight'?step:0,dy=e.key==='ArrowUp'?-step:e.key==='ArrowDown'?step:0,d=h.dataset.direction;
    if(!d){r.position_x+=dx;r.position_y+=dy;}else{if(d.includes('e'))r.width+=dx;if(d.includes('w')){r.width-=dx;r.position_x+=dx;}if(d.includes('s'))r.height+=dy;if(d.includes('n')){r.height-=dy;r.position_y+=dy;}}
-   if(r.position_x<0||r.position_y<0||r.width<220||r.height<160||r.height>3000||r.position_x+r.width>W||!free(r,rects.filter((_,i)=>i!==index))){indicate('Limite ou colisão.');return;}
+   if(r.position_x<0||r.position_y<0||r.width<220||r.height<160||r.height>3000||r.position_y+r.height>100000||r.position_x+r.width>W||!free(r,rects.filter((_,i)=>i!==index))){indicate('Limite ou colisão.');return;}
    rects[index]=r;paint();save(index,r,old);
   });
  });
