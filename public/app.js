@@ -35,7 +35,7 @@ function login(){ $('#app').innerHTML=`<main class="login-page"><div class="logi
  $('#login').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button.primary');button.disabled=true;try{await api('login',Object.fromEntries(new FormData(e.target)));await refresh();}catch(err){$('#login-error').textContent=err.message;}finally{button.disabled=false;}};
  $('#preview').onclick=()=>{demo=true;state={user:{name:'Vitor',username:'vitor',is_admin:true},items:[{id:'demo1',kind:'notes',title:'Meu primeiro lembrete',content:'Guarde aqui comandos e informações do seu dia a dia. Suas anotações serão visíveis somente para você.',color:'lime'},{id:'demo2',kind:'notes',title:'Comandos sempre à mão',content:'Use o botão de copiar para levar o conteúdo direto para a área de transferência.',color:'yellow'}]};render();};
 }
-function render(){const u=state.user;$('#app').innerHTML=`<div class="workspace"><aside><div class="brand"><img src="/logo.png" alt="Rautemaq"></div><span class="side-caption">CENTRAL TÉCNICA</span><nav>${Object.entries(labels).filter(([k])=>k!=='users'||u.is_admin).map(([k,v])=>`<button data-page="${k}" class="nav-item ${page===k?'active':''}">${icon(k)}<span>${v}</span>${page===k?'<i></i>':''}</button>`).join('')}</nav><div class="side-footer"><div class="side-help">Uma equipe.<br><strong>Muitas soluções.</strong></div><button class="profile" id="profile">${u.avatar?`<img src="${fileUrl(u.avatar)}" alt="Foto do perfil">`:`<span class="avatar">${esc(u.name[0])}</span>`}<span><strong>${esc(u.name)}</strong><small>${u.is_admin?'Administrador':'Técnico'}</small></span>${icon('edit')}</button><button class="logout" id="logout">${icon('out')} Sair da central</button></div></aside><div class="main-wrap"><header><button class="icon-btn mobile-menu" aria-label="Abrir menu">${icon('menu')}</button><div class="breadcrumb">Central técnica <span>/</span> <strong>${labels[page]}</strong></div><div class="header-right">${themeButton()}<span class="internal">USO INTERNO</span><span class="mini-avatar">${esc(u.name[0])}</span></div></header>${demo?'<div class="demo-banner">Prévia visual • Os exemplos não são dados reais e as alterações estão desativadas.</div>':''}<main id="content"></main><footer>Rautemaq <span>Central de suporte · v1.0.0</span></footer></div></div>`;drawContent();
+function render(){noteBoardObserver?.disconnect();const u=state.user;$('#app').innerHTML=`<div class="workspace"><aside><div class="brand"><img src="/logo.png" alt="Rautemaq"></div><span class="side-caption">CENTRAL TÉCNICA</span><nav>${Object.entries(labels).filter(([k])=>k!=='users'||u.is_admin).map(([k,v])=>`<button data-page="${k}" class="nav-item ${page===k?'active':''}">${icon(k)}<span>${v}</span>${page===k?'<i></i>':''}</button>`).join('')}</nav><div class="side-footer"><div class="side-help">Uma equipe.<br><strong>Muitas soluções.</strong></div><button class="profile" id="profile">${u.avatar?`<img src="${fileUrl(u.avatar)}" alt="Foto do perfil">`:`<span class="avatar">${esc(u.name[0])}</span>`}<span><strong>${esc(u.name)}</strong><small>${u.is_admin?'Administrador':'Técnico'}</small></span>${icon('edit')}</button><button class="logout" id="logout">${icon('out')} Sair da central</button></div></aside><div class="main-wrap"><header><button class="icon-btn mobile-menu" aria-label="Abrir menu">${icon('menu')}</button><div class="breadcrumb">Central técnica <span>/</span> <strong>${labels[page]}</strong></div><div class="header-right">${themeButton()}<span class="internal">USO INTERNO</span><span class="mini-avatar">${esc(u.name[0])}</span></div></header>${demo?'<div class="demo-banner">Prévia visual • Os exemplos não são dados reais e as alterações estão desativadas.</div>':''}<main id="content"></main><footer>Rautemaq <span>Central de suporte · v1.0.0</span></footer></div></div>`;drawContent();
  document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>navigate(b.dataset.page));$('.mobile-menu').onclick=()=>$('aside').classList.toggle('open');$('#logout').onclick=async()=>{try{if(!demo)await api('logout',{});demo=false;state={items:[]};page='home';login();}catch(e){toast(e.message);}};$('#profile').onclick=profile;
 }
 async function navigate(p){page=p;query='';if(p==='users'){try{users=demo?[state.user]:await api('users');}catch(e){toast(e.message);return;}}render();}
@@ -51,9 +51,9 @@ function drawContent(){const home=page==='home',titles={home:`Olá, ${state.user
  if(!home)drawResults();$('#add')?.addEventListener('click',()=>page==='users'?editUser():editItem(page==='tax'?'tax':page));$('#new-note')?.addEventListener('click',()=>editItem('notes'));$('#note-add')?.addEventListener('click',()=>editItem('notes'));$('#add-drive')?.addEventListener('click',()=>editItem('drive'));$('#search')?.addEventListener('input',e=>{query=e.target.value;drawResults();});document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>navigate(b.dataset.nav));bindCards();
 }
 const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-function drawResults(){const terms=normalize(query).split(/\s+/).filter(Boolean);if(page==='users'){$('#results').innerHTML=`<div class="user-list">${users.filter(u=>terms.every(t=>normalize(u.name+' '+u.username).includes(t))).map(u=>`<article class="resource-card"><span class="avatar">${esc(u.name[0])}</span><div class="resource-info"><h3>${esc(u.name)}</h3><p>@${esc(u.username)} · ${u.is_admin?'Administrador':'Técnico'}</p></div><button class="secondary" data-user="${u.id||''}">Editar</button>${!u.is_admin?`<button class="icon-btn" data-remove-user="${u.id}" aria-label="Excluir usuário">${icon('trash')}</button>`:''}</article>`).join('')}</div>`;document.querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>editUser(users.find(u=>u.id===b.dataset.user)));document.querySelectorAll('[data-remove-user]').forEach(b=>b.onclick=()=>confirmDelete(b.dataset.removeUser,true));return;}
+function drawResults(){noteBoardObserver?.disconnect();const terms=normalize(query).split(/\s+/).filter(Boolean);if(page==='users'){$('#results').innerHTML=`<div class="user-list">${users.filter(u=>terms.every(t=>normalize(u.name+' '+u.username).includes(t))).map(u=>`<article class="resource-card"><span class="avatar">${esc(u.name[0])}</span><div class="resource-info"><h3>${esc(u.name)}</h3><p>@${esc(u.username)} · ${u.is_admin?'Administrador':'Técnico'}</p></div><button class="secondary" data-user="${u.id||''}">Editar</button>${!u.is_admin?`<button class="icon-btn" data-remove-user="${u.id}" aria-label="Excluir usuário">${icon('trash')}</button>`:''}</article>`).join('')}</div>`;document.querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>editUser(users.find(u=>u.id===b.dataset.user)));document.querySelectorAll('[data-remove-user]').forEach(b=>b.onclick=()=>confirmDelete(b.dataset.removeUser,true));return;}
  const rows=state.items.filter(i=>(i.kind===page||(page==='files'&&i.kind==='drive'))&&terms.every(t=>normalize(i.title+' '+i.content).includes(t)));
- $('#results').innerHTML=`<div class="result-caption">${rows.length} ${rows.length===1?'registro encontrado':'registros encontrados'}</div><div class="${page==='notes'?'notes-grid':page==='faq'?'faq-grid':'resource-list'}">${rows.map(card).join('')}</div>${!rows.length?`<div class="empty">${icon(page)}<h2>${query?'Nenhum resultado por aqui.':'Vamos começar?'}</h2><p>${query?'Tente outra palavra ou parte da mensagem de erro.':'Adicione o primeiro registro usando o botão acima.'}</p></div>`:''}`;bindCards();}
+ $('#results').innerHTML=`<div class="result-caption">${rows.length} ${rows.length===1?'registro encontrado':'registros encontrados'}</div><div class="${page==='notes'?'notes-grid':page==='faq'?'faq-grid':'resource-list'}">${rows.map(card).join('')}</div>${!rows.length?`<div class="empty">${icon(page)}<h2>${query?'Nenhum resultado por aqui.':'Vamos começar?'}</h2><p>${query?'Tente outra palavra ou parte da mensagem de erro.':'Adicione o primeiro registro usando o botão acima.'}</p></div>`:''}`;bindCards();if(page==='notes')initNoteBoard(rows);}
 function bindCards(){document.querySelectorAll("[data-expand]").forEach(b=>b.onclick=()=>expandNote(state.items.find(i=>i.id===b.dataset.expand),b));document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const i=state.items.find(i=>i.id===b.dataset.edit);editItem(i.kind,i);});document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>confirmDelete(b.dataset.delete));document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(state.items.find(i=>i.id===b.dataset.copy).content);toast('Anotação copiada.');}catch{toast('O navegador não permitiu copiar. Selecione o texto manualmente.');}});document.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>detail(state.items.find(i=>i.id===b.dataset.detail)));document.querySelectorAll('[data-current]').forEach(b=>b.onclick=async()=>{try{await api('tax-current',{id:b.dataset.current});await refresh();toast('Tabela atualizada.');}catch(e){toast(e.message);}});}
 function modal(html){const d=$('#editor');d.innerHTML=`<button class="close" aria-label="Fechar">×</button>${html}`;d.querySelector('.close').onclick=()=>d.close();if(!d.open)d.showModal();}
 const field=(label,name,value='',type='text',required=true)=>`<label>${label}<input name="${name}" type="${type}" value="${esc(value)}" ${required?'required':''}></label>`;
@@ -117,6 +117,99 @@ function bindColorEditor(){
  square.onpointerdown=e=>{square.setPointerCapture(e.pointerId);point(e);};square.onpointermove=e=>{if(square.hasPointerCapture(e.pointerId))point(e);};
  $('#item-form').addEventListener('formdata',e=>{if(select.value==='custom')e.formData.set('color',custom);});
  syncFromHex();show();
+}
+
+
+let organizingNotes=false,noteBoardObserver;
+const overlaps=(a,b)=>a.position_x<b.position_x+b.width&&a.position_x+a.width>b.position_x&&a.position_y<b.position_y+b.height&&a.position_y+a.height>b.position_y;
+function initNoteBoard(rows){
+ noteBoardObserver?.disconnect();
+ const grid=$('#results .notes-grid');if(!grid)return;
+ const host=document.createElement('div');host.className='board-scroll';grid.before(host);host.append(grid);grid.className='note-board';
+ const bar=document.createElement('div');bar.className='board-tools';
+ bar.innerHTML='<button class="secondary" id="organize-notes"></button><button class="secondary" id="pack-notes">Organizar automaticamente</button><button class="secondary" id="reset-notes">Restaurar layout padrão</button><span role="status" class="board-status"></span>';
+ host.before(bar);
+ const toggle=bar.querySelector('#organize-notes'),pack=bar.querySelector('#pack-notes'),reset=bar.querySelector('#reset-notes'),status=bar.querySelector('.board-status');
+ let busy=false,rects=[],mode='',W=0,active=false;
+ const cards=Array.from(grid.children);
+ function indicate(message){status.textContent=message;}
+ function controls(){toggle.textContent=organizingNotes?'Concluir organização':'Organizar anotações';toggle.setAttribute('aria-pressed',String(organizingNotes));grid.classList.toggle('organizing',organizingNotes);pack.hidden=reset.hidden=!organizingNotes;for(const b of [toggle,pack,reset])b.disabled=busy||!!query||demo;cards.forEach(c=>c.querySelectorAll('.layout-handle').forEach(h=>h.tabIndex=organizingNotes?0:-1));}
+ function fit(r){return {width:Math.round(Math.max(220,Math.min(W,r.width))),height:Math.round(Math.max(160,Math.min(3000,r.height))),position_x:Math.round(Math.max(0,Math.min(W-Math.min(W,r.width),r.position_x))),position_y:Math.round(Math.max(0,Math.min(97000,r.position_y)))};}
+ function free(r,list){return !list.some(x=>overlaps(r,x));}
+ function place(r,list){
+  const ys=[0,...list.map(x=>x.position_y+x.height+16)].sort((a,b)=>a-b),xs=[0,...list.map(x=>x.position_x+x.width+16)].sort((a,b)=>a-b);
+  for(const y of ys)for(const x of xs){const p={...r,position_x:x,position_y:y};if(x+r.width<=W&&free(p,list))return p;}
+  return {...r,position_x:0,position_y:Math.max(0,...list.map(x=>x.position_y+x.height+16))};
+ }
+ function paint(){cards.forEach((c,i)=>{const r=rects[i];Object.assign(c.style,{left:r.position_x+'px',top:r.position_y+'px',width:r.width+'px',height:r.height+'px'});});grid.style.height=Math.max(600,...rects.map(r=>r.position_y+r.height+300))+'px';}
+ function layout(){
+  if(active)return;
+  W=Math.max(220,Math.min(5000,grid.clientWidth));mode=matchMedia('(max-width:780px)').matches?'mobile':'desktop';
+  const used=[];rects=rows.map((item,i)=>{
+   const saved=item['layout_'+mode];const valid=saved&&['position_x','position_y','width','height'].every(k=>Number.isFinite(saved[k]));
+   const fallback={position_x:0,position_y:0,width:Math.min(W,300),height:Math.min(420,Math.max(220,170+Math.ceil((item.content||'').length/35)*23))};
+   let r=fit(valid?saved:fallback);if(!valid||!free(r,used))r=place(r,used);used.push(r);return r;
+  });paint();controls();
+ }
+ async function save(index,next,previous){
+  busy=true;controls();indicate('Salvando layout…');
+  try{await api('note-layout',{id:rows[index].id,mode,layout:next});rows[index]['layout_'+mode]={...next};indicate('Layout salvo.');}
+  catch(e){rects[index]=previous;paint();indicate('Não foi salvo. Posição anterior restaurada.');toast(e.message);}
+  finally{busy=false;controls();}
+ }
+ function gesture(index,dir,event){
+  if(!organizingNotes||busy||query||event.button!==0)return;
+  event.preventDefault();const c=cards[index],handle=event.currentTarget,start={...rects[index]},startX=event.clientX,startY=event.clientY,scroll=host.scrollTop;
+  let last={...start};active=true;handle.setPointerCapture(event.pointerId);c.classList.add('moving');
+  function move(e){
+   const dx=e.clientX-startX,dy=e.clientY-startY+host.scrollTop-scroll;
+   let r={...start};
+   if(dir==='move'){r.position_x+=dx;r.position_y+=dy;}
+   else{
+    if(dir.includes('e'))r.width+=dx;if(dir.includes('s'))r.height+=dy;
+    if(dir.includes('w')){r.position_x+=dx;r.width-=dx;}if(dir.includes('n')){r.position_y+=dy;r.height-=dy;}
+   }
+   const valid=r.width>=220&&r.height>=160&&r.height<=3000&&r.position_x>=0&&r.position_y>=0&&r.position_x+r.width<=W&&r.position_y+r.height<=100000&&free(r,rects.filter((_,i)=>i!==index));
+   c.classList.toggle('collision',!valid);
+   if(valid){last=Object.fromEntries(Object.entries(r).map(([k,v])=>[k,Math.round(v)]));rects[index]=last;paint();}
+   const bounds=host.getBoundingClientRect();if(e.clientY>bounds.bottom-35)host.scrollTop+=12;else if(e.clientY<bounds.top+35)host.scrollTop-=12;
+  }
+  function finish(e){
+   handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',finish);handle.removeEventListener('pointercancel',finish);active=false;c.classList.remove('moving','collision');
+   if(e.type==='pointercancel'){rects[index]=start;paint();return;}
+   if(JSON.stringify(start)!==JSON.stringify(last))save(index,last,start);
+  }
+  handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',finish);
+ }
+ cards.forEach((c,index)=>{
+  const top=c.querySelector('.note-top');top.innerHTML='<button type="button" class="layout-handle move-handle" aria-label="Mover anotação (use as setas)" title="Arraste para mover; setas para ajuste">⠿ Mover</button>'+top.innerHTML;
+  const move=top.querySelector('button');move.onpointerdown=e=>gesture(index,'move',e);
+  for(const dir of ['n','s','e','w','ne','nw','se','sw']){const h=document.createElement('button');h.type='button';h.className='layout-handle resize-handle handle-'+dir;h.dataset.direction=dir;h.setAttribute('aria-label','Redimensionar '+dir+' (use as setas)');h.onpointerdown=e=>gesture(index,dir,e);c.append(h);}
+  c.querySelectorAll('.layout-handle').forEach(h=>h.onkeydown=e=>{
+   if(!organizingNotes||busy||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();
+   const old={...rects[index]},r={...old},step=e.shiftKey?1:10,dx=e.key==='ArrowLeft'?-step:e.key==='ArrowRight'?step:0,dy=e.key==='ArrowUp'?-step:e.key==='ArrowDown'?step:0,d=h.dataset.direction;
+   if(!d){r.position_x+=dx;r.position_y+=dy;}else{if(d.includes('e'))r.width+=dx;if(d.includes('w')){r.width-=dx;r.position_x+=dx;}if(d.includes('s'))r.height+=dy;if(d.includes('n')){r.height-=dy;r.position_y+=dy;}}
+   if(r.position_x<0||r.position_y<0||r.width<220||r.height<160||r.height>3000||r.position_x+r.width>W||!free(r,rects.filter((_,i)=>i!==index))){indicate('Limite ou colisão.');return;}
+   rects[index]=r;paint();save(index,r,old);
+  });
+ });
+ toggle.onclick=()=>{organizingNotes=!organizingNotes;controls();};
+ async function arrange(defaults){
+  if(!confirm(defaults?'Restaurar o layout padrão nesta categoria de tela?':'Substituir a disposição atual por uma organização compacta nesta categoria de tela?'))return;
+  busy=true;controls();indicate('Salvando organização…');
+  const used=[];
+  try{
+   for(let i=0;i<rows.length;i++){
+    const r=place(fit(defaults?{position_x:0,position_y:0,width:Math.min(300,W),height:Math.min(420,Math.max(220,170+Math.ceil((rows[i].content||'').length/35)*23))}:rects[i]),used);used.push(r);
+    await api('note-layout',{id:rows[i].id,mode,layout:defaults?null:r});rows[i]['layout_'+mode]=defaults?null:r;
+   }
+   indicate('Organização salva.');
+  }catch(e){indicate('Algumas alterações não foram salvas. Tente novamente.');toast(e.message);}
+  finally{busy=false;layout();}
+ }
+ pack.onclick=()=>arrange(false);reset.onclick=()=>arrange(true);
+ layout();let width=grid.clientWidth;noteBoardObserver=new ResizeObserver(()=>{if(grid.clientWidth!==width){width=grid.clientWidth;layout();}});noteBoardObserver.observe(grid);
+ if(query)indicate('Limpe a busca para organizar todas as anotações.');else if(demo)indicate('A organização requer uma sessão autenticada.');else indicate('Ative a organização para mover e redimensionar. Layout independente no celular.');
 }
 
 try{state=await api('state');render();}catch{login();}
